@@ -1,10 +1,3 @@
-
-const COLORS = [
-    "bisque", "black", "blue", "brown",
-    "cadetblue", "cyan", "darkseagreen",
-    "gray", "green", "orange",
-    "red", "salmon", "turquoise", "yellow"
-];
 /** * 
  * @param {Number} min lower bound, if it's not an integer, will be raised to the next integer
  * @param {Number} max greater bound, if it's not an integer, will be lowered to the previous integer
@@ -18,8 +11,12 @@ function getRandomInt(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min);
 }
+/**
+ * 
+ * @returns a random rgb color
+ */
 function chooseColor() {
-    /* return COLORS[Math.floor(Math.random() * COLORS.length)];*/
+    
     const red = getRandomInt(0, 256);
     const green = getRandomInt(0, 256);
     const blue = getRandomInt(0, 256);
@@ -47,7 +44,6 @@ function splitStyleLength(element, propertyName) {
      * followed by a unit of measure(px, pt, ...) 
     */
     const styleLengthRegEx = /(\d*\.?\d*)([a-z]*)/i;
-
     const elementStyles = window.getComputedStyle(element);
     const propertyValue = elementStyles.getPropertyValue(propertyName);
     const styleLengthArray = propertyValue.match(styleLengthRegEx);
@@ -63,7 +59,7 @@ function splitStyleLength(element, propertyName) {
 }
 /**
  * 
- * @param {*} container 
+ * @param {*} container the element in which we want to create a square grid
  
  * @returns an array of two values then it is [unitLessLenght,lenghtUnit],
  *          when there is more elements in the array, the first element is the whole styleLength string
@@ -85,19 +81,15 @@ function createGridOfSquares(container, nSquareBySide) {
     for (let i = 1; i <= nSquareBySide ** 2; i++) {
         createSquare(container, squareSide);
     }
-
 }
 
 function changeSquareColor(squareEl) {
-
     if (squareEl !== null &&
         squareEl.tagName !== "BODY" &&
         squareEl.tagName !== "HTML"
     ) {
         squareEl.style.backgroundColor = chooseColor();
     }
-
-
 }
 const containerEl = document.querySelector("#container");
 let previousVisitedSquareEl = null;
@@ -110,8 +102,7 @@ containerEl.addEventListener("mouseleave", (e) => {
 containerEl.addEventListener("mousemove", (e) => {
     /* we are going to work with the coordinates relative
      * to the parent div containerEl 
-     * here there is no related target
-    * 
+     * here there is no related target    * 
     */
     const squareSideArray = splitStyleLength(containerEl.firstChild, "height");
     const containerLengthArray = splitStyleLength(containerEl, "height");
@@ -127,8 +118,8 @@ containerEl.addEventListener("mousemove", (e) => {
              * and that 's not what we want
              * we want values relative to the container 
              */
-            let row = Math.floor((e.clientY) / squareSideUnitLess);
-            let col = Math.floor((e.clientX) / squareSideUnitLess);
+            let row = Math.floor((e.pageY) / squareSideUnitLess);
+            let col = Math.floor((e.pageX) / squareSideUnitLess);
             /* would e.pageX, e.pageY be the right properties to compute with ??*/
             let visitedSquareEl;
             //we calculate on which square we are on
@@ -150,10 +141,10 @@ containerEl.addEventListener("mousemove", (e) => {
                         previousVisitedSquareEl = visitedSquareEl;
                         //visitedSquareEl.innerText=row* nSquareBySide +(col+1);
                     }                    
-                }
-            }
-        }
-    }
+                } 
+            } //end if it's a square
+        } //end if units are the same
+    }//end if the arrays returned by splitStyleLength are of length 2
 });
 
 createGridOfSquares(containerEl, 20);
