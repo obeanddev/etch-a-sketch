@@ -119,18 +119,15 @@ containerEl.addEventListener("mousemove", (e) => {
              * we want values relative to the container 
              */
             let rectangles = containerEl.getClientRects();
-            console.log(rectangles);
-            let row = Math.floor((e.pageY - rectangles[0].top) / squareSideUnitLess);
-            let col = Math.floor((e.pageX -rectangles[0].left) / squareSideUnitLess);
+            let boundingRectangle=containerEl.getBoundingClientRect();
+            let row = Math.floor((e.pageY - (rectangles[0].top + window.scrollY)) / squareSideUnitLess);
+            let col = Math.floor((e.pageX -(rectangles[0].left + window.scrollX)) / squareSideUnitLess);
             /* would e.pageX, e.pageY be the right properties to compute with ??*/
             let visitedSquareEl;
             //we calculate on which square we are on
             const squareNumber = row * nSquareBySide + (col + 1);
             visitedSquareEl = containerEl.querySelector(
-                `div:nth-of-type(${squareNumber}`);
-            console.log("row", row, "col", col);
-             console.log("target", e.target);
-             console.log("currentTarget", e.currentTarget);
+                `div:nth-of-type(${squareNumber}`);            
            
             if (visitedSquareEl.classList.contains("square")) {
                 if (previousVisitedSquareEl === null) {

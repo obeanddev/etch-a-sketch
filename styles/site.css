@@ -14,7 +14,7 @@ body {
 #container {
     display: flex;
     flex-wrap: wrap;
-    position: absolute;
+    position: relative;
     top:100px;
     left:100px;
     width: 540px;
