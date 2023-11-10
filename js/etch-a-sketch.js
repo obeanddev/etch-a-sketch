@@ -15,7 +15,7 @@ function getRandomInt(min, max) {
  * 
  * @returns a random rgb color
  */
-function chooseColor() {
+function chooseRandomColor() {
     
     const red = getRandomInt(0, 256);
     const green = getRandomInt(0, 256);
@@ -88,7 +88,7 @@ function changeSquareColor(squareEl) {
         squareEl.tagName !== "BODY" &&
         squareEl.tagName !== "HTML"
     ) {
-        squareEl.style.backgroundColor = chooseColor();
+        squareEl.style.backgroundColor = chooseRandomColor();
     }
 }
 const containerEl = document.querySelector("#container");
@@ -118,18 +118,20 @@ containerEl.addEventListener("mousemove", (e) => {
              * and that 's not what we want
              * we want values relative to the container 
              */
-            let row = Math.floor((e.pageY) / squareSideUnitLess);
-            let col = Math.floor((e.pageX) / squareSideUnitLess);
+            let rectangles = containerEl.getClientRects();
+            console.log(rectangles);
+            let row = Math.floor((e.pageY - rectangles[0].top) / squareSideUnitLess);
+            let col = Math.floor((e.pageX -rectangles[0].left) / squareSideUnitLess);
             /* would e.pageX, e.pageY be the right properties to compute with ??*/
             let visitedSquareEl;
             //we calculate on which square we are on
             const squareNumber = row * nSquareBySide + (col + 1);
             visitedSquareEl = containerEl.querySelector(
                 `div:nth-of-type(${squareNumber}`);
-            /* console.log("row", row, "col", col);
+            console.log("row", row, "col", col);
              console.log("target", e.target);
              console.log("currentTarget", e.currentTarget);
-            */
+           
             if (visitedSquareEl.classList.contains("square")) {
                 if (previousVisitedSquareEl === null) {
                     previousVisitedSquareEl = visitedSquareEl;
