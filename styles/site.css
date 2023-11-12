@@ -1,7 +1,10 @@
 html {
     box-sizing: border-box;
+    font-size:1rem;
 }
-
+:root {
+    --container-side-length: 540px;
+}
 * {
     box-sizing: inherit;
     margin: 0;
@@ -16,14 +19,24 @@ body {
 
 .outer {
     padding: 40px;
-    background-color: coral;
-    top: 100px;
-    left: 100px;
-    --container-side-length: 540px;
+    background-color: coral;    
+    
     width: calc(var(--container-side-length) + 2 * 40px + 2 * 25px);
     height: calc(var(--container-side-length) + 2 * 40px + 2 * 25px);
 }
+.buttonBar {
+    display: flex;
+    width: calc(var(--container-side-length) + 2 * 40px + 2 * 25px);
+    height: calc(var(--container-side-length) / 5);
+    justify-content: center;
+    align-items: center;
+    border: 2px solid green;
+    font-size:2rem;
+}
+.buttonBar button{
+    font-size: inherit;
 
+}
 .inner {
     padding: 25px;
     background-color: burlywood;
@@ -43,5 +56,27 @@ body {
 
 .square {
     flex: none;
-    outline: 1px solid blue;
+  /*  outline: 1px solid blue;*/
+}
+#dialogMessage.flex {
+    display: flex;
+    width:100%;
+    font-size:2rem;
+
+}
+.warning {
+    background-color:  rgb(255, 255, 153);
+}
+
+.error {
+    background-color:#d57676; /*or indianred;*/
+    
+}
+
+.hidden {
+    display: none;
+}
+dialog form {
+    display: flex;
+    flex-direction: column;
 }

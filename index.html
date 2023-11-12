@@ -10,6 +10,28 @@
 </head>
 
 <body>
+
+    <dialog>
+        <form >
+            <label for="nSquare">Number of squares by side in the next grid (2 to 100) : 
+                <input id="nSquare" type="number"  min="2" max="100">
+            </label>
+                <div id="dialogMessage" class="hidden">
+                    <div id="type"><p></p></div>
+                    <p></p>
+                    <button type="button" class="reset" >Reset to previous value</button>
+                    <button type="button" class="close" >&#128473;</div>
+                </div>
+                <button value="cancel" formmethod="dialog">Cancel</button>    
+                <button type="button" id="confirmBtn" value="default">Confirm</button>
+            
+
+        </form>
+
+    </dialog>
+    <div class="buttonBar">
+        <button id="showDialogBtn" type="button">Change number of squares</button>
+    </div>
     <div class="outer">
         <div class="inner">
 

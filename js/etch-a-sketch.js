@@ -16,13 +16,12 @@ function getRandomInt(min, max) {
  * @returns a random rgb color
  */
 function chooseRandomColor() {
-
     const red = getRandomInt(0, 256);
     const green = getRandomInt(0, 256);
     const blue = getRandomInt(0, 256);
     return `rgb(${red},${green},${blue})`;
-
 }
+
 function createSquare(container, sideLength) {
     const squareEl = document.createElement("div");
     squareEl.style.width = squareEl.style.height = sideLength;
@@ -58,7 +57,6 @@ function splitStyleLength(element, propertyName) {
     }
 }
 /**
- * 
  * @param {*} container the element in which we want to create a square grid
  * @param {*} nSquareBySide the number of square by side, must be an integer
  * @returns an array of two values then it is [unitLessLenght,lenghtUnit],
@@ -98,10 +96,10 @@ function createGridOfSquares(container, nSquareBySide) {
     let col;
     for (let i = 1; i <= nSquareBySide ** 2; i++) {
         squareEl = createSquare(container, squareSide);
-        row = Math.floor((i - 1) / nSquareBySide);
+      /*  row = Math.floor((i - 1) / nSquareBySide);
         col = (i - row * nSquareBySide - 1) % nSquareBySide;
         squareEl.setAttribute("data-row", row);
-        squareEl.setAttribute("data-col", col);
+        squareEl.setAttribute("data-col", col);*/
     }
 }
 
@@ -115,7 +113,11 @@ function changeSquareColor(squareEl) {
 }
 const containerEl = document.querySelector("#container");
 let previousVisitedSquareEl = null;
+function clearGrid(container) {    
+    container.replaceChildren();
+    previousVisitedSquareEl = null;
 
+}
 containerEl.addEventListener("mouseleave", (e) => {
     previousVisitedSquareEl = null;
 });
@@ -147,19 +149,17 @@ containerEl.addEventListener("mousemove", (e) => {
             let visitedSquareElOld;
             let visitedSquareEl;
             let element = document.elementFromPoint(e.x, e.y);
-
-            if (element !== null && element!== undefined && element.classList.contains("square")) {
+            if (element !== null && element !== undefined && element.classList.contains("square")) {
                 visitedSquareEl = element;
             }
-
             if (visitedSquareEl === null || visitedSquareEl === undefined) {
-             //   console.log("still null");
+                //   console.log("still null");
                 return;
             }
             //we calculate on which square we are on
-            const squareNumber = row * (nSquareBySide) + (col) + 1;
-            visitedSquareElOld = containerEl.querySelector(
-                `div:nth-of-type(${squareNumber}`);
+         //   const squareNumber = row * (nSquareBySide) + (col) + 1;
+         //   visitedSquareElOld = containerEl.querySelector(
+         //       `div:nth-of-type(${squareNumber}`);
 
             if (visitedSquareEl.classList.contains("square")) {
                 if (previousVisitedSquareEl === null) {
@@ -180,4 +180,82 @@ containerEl.addEventListener("mousemove", (e) => {
     }//end if the arrays returned by splitStyleLength are of length 2
 });
 
-createGridOfSquares(containerEl, 20);
+let nSquareBySide = 50;
+createGridOfSquares(containerEl, nSquareBySide);
+/**************SHOW DIALOG***********************/
+let selectedSquareBySide=nSquareBySide;
+let dialog = document.querySelector("dialog");
+let confirmBtn = document.querySelector("#confirmBtn")
+let showDialogBtn = document.querySelector("#showDialogBtn");
+let nSquareInput = document.querySelector("#nSquare");
+showDialogBtn.addEventListener("click", () => {
+
+    dialog.showModal();
+});
+confirmBtn.addEventListener("click", (e) => {
+   
+    console.log("confirmBtnValue in click: ",confirmBtn.value);
+   
+    e.preventDefault(); // we don't want to submit this form
+    dialog.close(confirmBtn.value);
+});
+
+nSquareInput.addEventListener("input", (e) => {
+    //TODO check validity of the value
+    //TODO accept it or reject it, if invalid set back to the last known value
+    //TODO put warning when value above a threeshold near 80
+    let dialogMessage = dialog.querySelector("#dialogMessage");
+    let typeEl = dialogMessage.querySelector("#type p");
+    let messageEl = dialog.querySelector("#dialogMessage>p")
+    if (e.target.checkValidity()) {
+        confirmBtn.value = e.target.value;
+        console.log(e.target);
+        if (dialogMessage.classList.contains("flex")) {
+            dialogMessage.classList.replace("flex","hidden");
+        }
+    } else {
+        if (dialogMessage.classList.contains("hidden")) {
+            dialogMessage.classList.replace("hidden", "flex");
+            if (!dialogMessage.classList.contains("error")) {
+                dialogMessage.classList.toggle("error");
+            }
+            typeEl.innerText = "ERROR! ";
+            let validityState = e.target.validity;
+            if (validityState.badInput) {
+                messageEl.innerText="The input must be a number with each character in the range 0 to 9";
+            } else {
+                if (validityState.rangeOverflow) {
+                    messageEl.innerText = "The value must be at most 100. ";
+                } else if (validityState.rangeUnderflow) {
+                    messageEl.innerText = "The value must be at least 2. ";
+                }
+                if (validityState.stepMismatch) {
+                    messageEl.innerText += "The value must be a whole number (integer)";
+                }
+            }
+        }
+    }
+});
+const ENTER_KEY="Enter";
+nSquareInput.addEventListener("keydown",(e)=>{
+if (e.key === ENTER_KEY) {
+    e.stopPropagation();
+    e.preventDefault();
+    confirmBtn.click();
+}
+});
+dialog.addEventListener("close", (e) => {
+    let nSquare;
+    console.log("in close :", dialog.returnValue);
+    if (dialog.returnValue !== "default" && dialog.returnValue !== "cancel") {
+        // have I to check validity?
+        selectedSquareBySide =nSquare = Number(dialog.returnValue);
+
+        setTimeout(() => {
+            clearGrid(containerEl);
+            createGridOfSquares(containerEl,selectedSquareBySide);
+        }, 50);
+    }
+
+});
+
