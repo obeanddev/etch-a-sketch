@@ -1,26 +1,5 @@
-/** * 
- * @param {Number} min lower bound, if it's not an integer, will be raised to the next integer
- * @param {Number} max greater bound, if it's not an integer, will be lowered to the previous integer
- * @returns {Number} 
- * @description returns a integer value between min included 
- * and max excluded
- */
-function getRandomInt(min, max) {
-    /* see MDN page on Math.random */
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min) + min);
-}
-/**
- * 
- * @returns a random rgb color
- */
-function chooseRandomColor() {
-    const red = getRandomInt(0, 256);
-    const green = getRandomInt(0, 256);
-    const blue = getRandomInt(0, 256);
-    return `rgb(${red},${green},${blue})`;
-}
+import * as Colors from "./colors.js";
+
 
 function createSquare(container, sideLength) {
     const squareEl = document.createElement("div");
@@ -88,7 +67,7 @@ function getOffsetLeftTop(fromEl, toEl) {
     }
     return offsets;
 }
-
+let setColorMode=Colors.selectColorMode(Colors.MODE_WHITE_BLACK);
 function createGridOfSquares(container, nSquareBySide) {
     const squareSide = getSquareSide(container, nSquareBySide);
     let squareEl;
@@ -103,12 +82,17 @@ function createGridOfSquares(container, nSquareBySide) {
     }
 }
 
-function changeSquareColor(squareEl) {
+function changeSquareColor(squareEl,chooseColor) {
     if (squareEl !== null &&
         squareEl.tagName !== "BODY" &&
         squareEl.tagName !== "HTML"
     ) {
-        squareEl.style.backgroundColor = chooseRandomColor();
+        
+        let oldColor= squareEl.style.backgroundColor ?
+             squareEl.style.backgroundColor:window.getComputedStyle(squareEl.parentElement).getPropertyValue("background-color");
+        squareEl.style.backgroundColor = chooseColor(
+             oldColor
+             );
     }
 }
 const containerEl = document.querySelector("#container");
@@ -164,11 +148,11 @@ containerEl.addEventListener("mousemove", (e) => {
             if (visitedSquareEl.classList.contains("square")) {
                 if (previousVisitedSquareEl === null) {
                     previousVisitedSquareEl = visitedSquareEl;
-                    changeSquareColor(visitedSquareEl);
+                    changeSquareColor(visitedSquareEl,setColorMode);
                 } else {
                     let sameNode = previousVisitedSquareEl.isSameNode(visitedSquareEl)
                     if (!sameNode) {
-                        changeSquareColor(visitedSquareEl);
+                        changeSquareColor(visitedSquareEl,setColorMode);
                         previousVisitedSquareEl = visitedSquareEl;
                         if (visitedSquareEl === visitedSquareElOld) {
                             visitedSquareEl.innerText = squareNumber;
