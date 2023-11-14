@@ -51,7 +51,7 @@ body {
 
     width: var(--container-side-length);
     height: var(--container-side-length);
-    background-color: #d9d9d9;
+    background-color: rgb(217, 217, 217,0.5);
 }
 
 .square {

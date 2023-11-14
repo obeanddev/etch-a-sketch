@@ -96,6 +96,7 @@ function changeSquareColor(squareEl,chooseColor) {
     }
 }
 const containerEl = document.querySelector("#container");
+Colors.setDefaultColor(window.getComputedStyle(containerEl).getPropertyValue("background-color"));
 let previousVisitedSquareEl = null;
 function clearGrid(container) {    
     container.replaceChildren();
@@ -184,9 +185,7 @@ confirmBtn.addEventListener("click", (e) => {
     dialog.close(confirmBtn.value);
 });
 
-nSquareInput.addEventListener("input", (e) => {
-    //TODO check validity of the value
-    //TODO accept it or reject it, if invalid set back to the last known value
+nSquareInput.addEventListener("input", (e) => {    
     //TODO put warning when value above a threeshold near 80
     let dialogMessage = dialog.querySelector("#dialogMessage");
     let typeEl = dialogMessage.querySelector("#type p");
