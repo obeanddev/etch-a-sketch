@@ -37,6 +37,7 @@ class ColorNotImplementedError extends ColorError {
         this.name = "ColorNotImplementedError";
     }
 }
+// TODO implement conversions algorithm RGB <->HSL 
 class Color {
     static getPercents(val, maxVal) {
         return (val / maxVal) * 100;
@@ -54,8 +55,12 @@ class Color {
     // }
     get blue() { return undefined; }
     get alpha() { return undefined; }
+    get hue() { return undefined; }
+    get saturation() { return undefined; }
+    get lightness() { return undefined; }
     rgbValue() { return undefined; }
     rgbValuePercents() { return undefined; }
+    hslValue() { return undefined; }
 
 }
 let colorClasses = {};
@@ -118,6 +123,7 @@ colorClasses["rgb"] = class ColorRGB extends Color {
     get green() { return this.#green; }
     get blue() { return this.#blue; }
     get alpha() { return this.#alpha; }
+
 };
 colorClasses["hexa"] = class ColorHexa extends Color {
     #red;
@@ -176,7 +182,7 @@ colorClasses["hexa"] = class ColorHexa extends Color {
     rgbValue() { return this.#colorRGB.rgbValue(); }
     rgbValuePercents() { return this.#colorRGB.rgbValuePercents(); }
 };
-colorClasses["hsl"] = class ColorHSL extends Color{
+colorClasses["hsl"] = class ColorHSL extends Color {
     #hue;
     #saturation
     #lightness;
@@ -215,7 +221,8 @@ colorClasses["hsl"] = class ColorHSL extends Color{
                 if (Color.isValidAlpha(numValues[3])) {
                     this.#alpha = numValues[3];
                 } else {
-                    throw new ColorInvalidValueError("alpha must be a real in the inteval [0-1]");
+                    throw new ColorInvalidValueError("alpha must be a real in the interval [0-1]");
+
                 }
             }
         } else {
@@ -247,14 +254,14 @@ colorClasses["hsl"] = class ColorHSL extends Color{
 
     }
     darken(deltaPercent) {
-        let result=this.#lightness - delta;
-        result=result>=0?result:0;
+        let result = this.#lightness - delta;
+        result = result >= 0 ? result : 0;
         this.#lightness = result;
     }
     lighten(deltaPercent) {
         let result = this.#lightness + delta;
-        result=result<=100?result:100;
-        this.#lightness=result;
+        result = result <= 100 ? result : 100;
+        this.#lightness = result;
     }
 }
 class ColorFactory {
@@ -264,10 +271,94 @@ class ColorFactory {
 }
 
 let defaultColor = "rgb(217, 217, 217)";
+//TODO improve parsing algorithm
 function parseColorString(colorString) {
-    //TODO complete Code
+
     let result = {};
-    if (colorString.startsWith("rgb")) {
+    if (colorString.startsWith("#")) {
+        result = new ColorFactory("hexa", colorString);
+    } else {
+        const trimmedColorStr = colorString.trim();
+        const idxOpenParen = trimmedColorStr.indexOf("(");
+        const idxCloseParen = trimmedColorStr.lastIndexOf(")");
+        if (idxOpenParen == -1) {
+            if (idxCloseParen == -1) {
+                // trimmedColorStr is probably a colorName
+            }  else {
+                throw ColorParseError(`The sring has unmatched parentheses: ${trimmedColorStr}`);
+            }
+        } else {
+            if (idxOpenParen !== -1 && idxCloseParen !== trimmedColorStr.length - 1) {
+                throw new ColorParseError("Once trimmed, the last closing parenthesis must be at the end of the String");
+            }
+            const funcName = trimmedColorStr.substring(0, idxOpenParen);
+            const EXPECTED_NAMES = ["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch", "color"];
+            if (!EXPECTED_NAMES.includes(funcName)) {
+                throw new ColorParseError(`The function ${funcName} is not a knwon function color`);
+
+            }
+            let stack = [];
+            let i = idxOpenParen + 1;
+            while (i < trimmedColorStr.length) {
+                switch (true) {
+                    case trimmedColorStr[i].match(/\d/):
+                        if (stack.length >0){
+                            let top=stack[length -1];
+                            switch (true) {
+                                case top.match(/\d+\.\d*/):
+                                    stack[length-1]= top + "" + trimmedColorStr[i];
+                                    break;
+                                case top.match(/\s/):
+                                    stack.push(trimmedColorStr[i]);
+                                    break;    
+                                case top.match(/[A-Za-z]+-?/):
+                                    stack[length-1]= top + "" + trimmedColorStr[i];
+                                    break;
+                                case top.match(/-/):
+                                    stack[length-1]= top + "" + trimmedColorStr[i];
+                                    break;
+                                case top.match(/\(/):
+                                    stack.push(trimmedColorStr[i]);
+                                    break;
+                                default:
+
+                                
+                            }
+                        }
+                        break;
+
+                    case trimmedColorStr[i].match(/\./):
+                        break;
+                    case trimmedColorStr[i].match(/-/): 
+                    break;
+                    case trimmedColorStr[i].match(/%/):
+                        break;
+                    case trimmedColorStr[i].match(/,/):
+                        break;
+                    case trimmedColorStr[i].match(/\s/):
+                        break;
+                    case trimmedColorStr[i].match(/\//):
+                        break;
+                    case trimmedColorStr[i].match(/\+|\*/):
+                        break;
+                    case trimmedColorStr[i].match(/[A-Za-z]/):
+                        break;
+                    case trimmedColorStr[i].match(/\(/):
+                        break;
+                    case trimmedColorStr[i].match(/\)/):
+                        break;
+                
+                    default:
+                        throw new ColorParseError(
+                            `Unexpected character : ${trimmedColorStr[i]} in ${trimmedColorStr}`);
+                        break;
+
+                }
+                i++;
+            }
+        }
+
+    }/*if (colorString.startsWith("rgb")) {
         let arrayRGB = colorString.split(/\(|,|\)/);
         console.log(arrayRGB);
         if (arrayRGB[1] === "") {
@@ -282,18 +373,10 @@ function parseColorString(colorString) {
                 arrayRGB[2].trim(),
                 arrayRGB[3].trim(),
                 arrayRGB.length === 5 ? arrayRGB[4].trim() : 1);
-            /*{
-                type: "rgb",
-                red: arrayRGB[1].trim(),
-                green: arrayRGB[2].trim(),
-                blue: arrayRGB[3].trim(),
-                alpha: arrayRGB.length === 5 ? arrayRGB[4] : 1
-            }*/
+            
             console.log(result);
-        }
-    } else if (colorString.startsWith("#")) {
-        result = new ColorFactory("hexa", colorString);
-    }
+        }*/
+
     return result;
 }
 function setDefaultColor(newColor) {
