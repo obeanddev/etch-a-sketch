@@ -1,10 +1,12 @@
 import * as Colors from "./colors.js";
-
+let currentColorMode;
 
 function createSquare(container, sideLength) {
     const squareEl = document.createElement("div");
     squareEl.style.width = squareEl.style.height = sideLength;
     squareEl.classList.add("square");
+    squareEl.setAttribute("data-num","9");
+    squareEl.setAttribute("data-denom","10");
     container.appendChild(squareEl);
     return squareEl;
 }
@@ -45,8 +47,8 @@ function getSquareSide(container, nSquareBySide) {
     let squareSide = "100px";
     const heightStrings = splitStyleLength(container, "height");
     if (heightStrings.length === 2) {
-        //item at index [0] is the whole string
-        //item at index[1] is the number of units
+        //item at index [0] is the number of units
+        //item at index[1] is the unit
         squareSide = Number(heightStrings[0]) / nSquareBySide + heightStrings[1];
     }
     return squareSide;
@@ -68,6 +70,7 @@ function getOffsetLeftTop(fromEl, toEl) {
     return offsets;
 }
 let setColorMode=Colors.selectColorMode(Colors.MODE_WHITE_BLACK);
+currentColorMode=Colors.MODE_WHITE_BLACK;
 function createGridOfSquares(container, nSquareBySide) {
     const squareSide = getSquareSide(container, nSquareBySide);
     let squareEl;
@@ -82,7 +85,7 @@ function createGridOfSquares(container, nSquareBySide) {
     }
 }
 
-function changeSquareColor(squareEl,chooseColor) {
+function changeSquareColor(squareEl,chooseColor,coeff) {
     if (squareEl !== null &&
         squareEl.tagName !== "BODY" &&
         squareEl.tagName !== "HTML"
@@ -90,9 +93,28 @@ function changeSquareColor(squareEl,chooseColor) {
         
         let oldColor= squareEl.style.backgroundColor ?
              squareEl.style.backgroundColor:window.getComputedStyle(squareEl.parentElement).getPropertyValue("background-color");
+             if (currentColorMode === Colors.MODE_DARKENING ) {
+                if (parseInt(squareEl.dataset.denom) > 0) {
+                    coeff = parseInt( squareEl.dataset.num) / parseInt(squareEl.dataset.denom);
+                } else if (parseInt(squareEl.dataset.num)!=0 ){
+                    coeff=1;
+                } else {
+                    coeff=0;
+                }
+
+             } else {
+                coeff=0;
+             }
         squareEl.style.backgroundColor = chooseColor(
-             oldColor
+             oldColor,
+             coeff
              );
+            if(currentColorMode === Colors.MODE_DARKENING) {
+                if ( parseInt(squareEl.dataset.num) > 0) {
+                    squareEl.dataset.num= parseInt(squareEl.dataset.num,10) -1;
+                    squareEl.dataset.denom= parseInt(squareEl.dataset.denom,10) -1;
+                }
+            }
     }
 }
 const containerEl = document.querySelector("#container");
@@ -121,6 +143,7 @@ containerEl.addEventListener("mousemove", (e) => {
         let squareSideUnits = squareSideArray[1];
         let containerLengthUnitLess = containerLengthArray[0];
         let containerLengthUnits = containerLengthArray[1];
+        let coeff=0.1;
         if (squareSideUnits === containerLengthUnits) {
             let nSquareBySide = Math.floor(containerLengthUnitLess / squareSideUnitLess);
             /* offsetX, offsetY are relative to the target element 
@@ -149,11 +172,11 @@ containerEl.addEventListener("mousemove", (e) => {
             if (visitedSquareEl.classList.contains("square")) {
                 if (previousVisitedSquareEl === null) {
                     previousVisitedSquareEl = visitedSquareEl;
-                    changeSquareColor(visitedSquareEl,setColorMode);
+                    changeSquareColor(visitedSquareEl,setColorMode,coeff);
                 } else {
                     let sameNode = previousVisitedSquareEl.isSameNode(visitedSquareEl)
                     if (!sameNode) {
-                        changeSquareColor(visitedSquareEl,setColorMode);
+                        changeSquareColor(visitedSquareEl,setColorMode,coeff);
                         previousVisitedSquareEl = visitedSquareEl;
                         if (visitedSquareEl === visitedSquareElOld) {
                             visitedSquareEl.innerText = squareNumber;
@@ -186,7 +209,7 @@ confirmBtn.addEventListener("click", (e) => {
 });
 
 nSquareInput.addEventListener("input", (e) => {    
-    //TODO put warning when value above a threeshold near 80
+    //TODO put warning when value above a threshold near 80
     let dialogMessage = dialog.querySelector("#dialogMessage");
     let typeEl = dialogMessage.querySelector("#type p");
     let messageEl = dialog.querySelector("#dialogMessage>p")

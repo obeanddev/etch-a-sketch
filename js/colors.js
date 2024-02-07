@@ -82,7 +82,7 @@ colorClasses["rgb"] = class ColorRGB extends Color {
         let colorArray = numValues.filter((element) => {
             return Color.isValidRGBColor(element);
         });
-        if (colorArray.length == 3 || colorArray.length == 4) {
+        if (colorArray.length == 3) {
             this.#red = colorArray[0];
             this.#green = colorArray[1];
             this.#blue = colorArray[2];
@@ -181,6 +181,12 @@ colorClasses["hexa"] = class ColorHexa extends Color {
     }
     rgbValue() { return this.#colorRGB.rgbValue(); }
     rgbValuePercents() { return this.#colorRGB.rgbValuePercents(); }
+    /*darken(coeff) {
+
+    }
+    lighten(coeff) {
+
+    }*/
 };
 colorClasses["hsl"] = class ColorHSL extends Color {
     #hue;
@@ -253,13 +259,13 @@ colorClasses["hsl"] = class ColorHSL extends Color {
         }
 
     }
-    darken(deltaPercent) {
-        let result = this.#lightness - delta;
+    darken(coeff) {
+        let result = this.#lightness * ( 1 - coeff) ; 
         result = result >= 0 ? result : 0;
         this.#lightness = result;
     }
-    lighten(deltaPercent) {
-        let result = this.#lightness + delta;
+    lighten(coeff) {
+        let result = this.#lightness * ( 1 +coeff);
         result = result <= 100 ? result : 100;
         this.#lightness = result;
     }
@@ -272,86 +278,132 @@ class ColorFactory {
 
 let defaultColor = "rgb(217, 217, 217)";
 //TODO improve parsing algorithm
+// String.match returns an array!!!!!!!
+// One has to use methods of RegExp to get the results he want
 function parseColorString(colorString) {
-
     let result = {};
     if (colorString.startsWith("#")) {
         result = new ColorFactory("hexa", colorString);
     } else {
-        const trimmedColorStr = colorString.trim();
-        const idxOpenParen = trimmedColorStr.indexOf("(");
-        const idxCloseParen = trimmedColorStr.lastIndexOf(")");
+        const workColString = colorString.trim();
+        const idxOpenParen = workColString.indexOf("(");
+        const idxCloseParen = workColString.lastIndexOf(")");
         if (idxOpenParen == -1) {
             if (idxCloseParen == -1) {
-                // trimmedColorStr is probably a colorName
+                // workColString is probably a colorName
             }  else {
-                throw ColorParseError(`The sring has unmatched parentheses: ${trimmedColorStr}`);
+                throw ColorParseError(`The sring has unmatched parentheses: ${workColString}`);
             }
         } else {
-            if (idxOpenParen !== -1 && idxCloseParen !== trimmedColorStr.length - 1) {
+            if (idxOpenParen !== -1 && idxCloseParen !== workColString.length - 1) {
                 throw new ColorParseError("Once trimmed, the last closing parenthesis must be at the end of the String");
             }
-            const funcName = trimmedColorStr.substring(0, idxOpenParen);
+            const funcName = workColString.substring(0, idxOpenParen);
             const EXPECTED_NAMES = ["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch", "color"];
             if (!EXPECTED_NAMES.includes(funcName)) {
-                throw new ColorParseError(`The function ${funcName} is not a knwon function color`);
+                throw new ColorParseError(`The function ${funcName} is not a known function color`);
 
             }
             let stack = [];
             let i = idxOpenParen + 1;
-            while (i < trimmedColorStr.length) {
+            let top;
+            stack.push(workColString[idxOpenParen]);
+            while (i < workColString.length) {
+                console.log(workColString , i);
                 switch (true) {
-                    case trimmedColorStr[i].match(/\d/):
+                    case /\d/.test(workColString[i]):
                         if (stack.length >0){
-                            let top=stack[length -1];
+                            top=stack[length -1];
                             switch (true) {
-                                case top.match(/\d+\.\d*/):
-                                    stack[length-1]= top + "" + trimmedColorStr[i];
+                                case /\d+\.?\d*/.test(top):
+                                    stack[length-1]= top + "" + workColString[i];
                                     break;
-                                case top.match(/\s/):
-                                    stack.push(trimmedColorStr[i]);
+                                case /\s/.test(top):
+                                    stack.push(workColString[i]);
                                     break;    
-                                case top.match(/[A-Za-z]+-?/):
-                                    stack[length-1]= top + "" + trimmedColorStr[i];
+                                case /[A-Za-z]+-?/.test(top):
+                                    stack[length-1]= top + "" + workColString[i];
                                     break;
-                                case top.match(/-/):
-                                    stack[length-1]= top + "" + trimmedColorStr[i];
+                                case /-/.test(top):
+                                    stack[length-1]= top + "" + workColString[i];
                                     break;
-                                case top.match(/\(/):
-                                    stack.push(trimmedColorStr[i]);
+                                case /\(/.test(top):
+                                    stack.push(workColString[i]);
+                                    break;                                 
+                                default:
+                                    throw new ColorParseError(`unexpected Token ${workColString[i]}after ${top}` );
+                                    //break;
+
+                                
+                            }
+                        } else { // stack.length=0
+                            stack.push(workColString[i]);
+
+
+                        }
+                        break;
+
+                    case /\./.test(workColString[i]):
+                        if (stack.length>0) {
+                            top=stack[stack.length - 1];
+                            switch (true) {
+                                case /\d+/.test(top):
+                                    stack[length-1] = top +"" + workColString[i];
+                                    break;
+                                case /\(|\s+/.test(top):                                
+                                    stack.push(workColString[i]);
                                     break;
                                 default:
-
+                                    throw new ColorParseError(`unexpected token ${workColString[i]} after ${top}`);
                                 
                             }
                         }
                         break;
+                    case /-/.test(workColString[i]):
+                        if (stack.length >0) {
+                            top = stack[stack.length -1];
+                            switch(true) {
+                                case /[a-zA-Z]+/.test(top):
+                                    stack[stack.length -1]+="" + workColString[i];
+                                break;
+                                case /\s+/.test(top):
+                                    stack.push(workColString[i]);
+                                default:
+                                    throw new ColorParseError(`unexpected token ${workColString[i]} after ${top}`);
+                                    //break;
+                            }
 
-                    case trimmedColorStr[i].match(/\./):
-                        break;
-                    case trimmedColorStr[i].match(/-/): 
+                        } 
                     break;
-                    case trimmedColorStr[i].match(/%/):
+                    case /%/.test(workColString[i]):
+                        if (stack.length >0) {
+                            top= stack[stack.length -1];
+                            if (/\d+(.\d*)?/.test(stack[length -1])) {
+                                stack.push(workColString[i]);
+                            } else {
+                                throw new ColorParseError(`unexpected token ${workColString[i]} after ${top}`);
+                            }
+                        }
                         break;
-                    case trimmedColorStr[i].match(/,/):
+                    case /,/.test(workColString[i]):
                         break;
-                    case trimmedColorStr[i].match(/\s/):
+                    case /\s/.test(workColString[i]):
                         break;
-                    case trimmedColorStr[i].match(/\//):
+                    case /\//.test(workColString[i]):
                         break;
-                    case trimmedColorStr[i].match(/\+|\*/):
+                    case /\+|\*/.test(workColString[i]):
                         break;
-                    case trimmedColorStr[i].match(/[A-Za-z]/):
+                    case /[A-Za-z]+/.test(workColString[i]):
                         break;
-                    case trimmedColorStr[i].match(/\(/):
+                    case /\(/.test(workColString[i]):
                         break;
-                    case trimmedColorStr[i].match(/\)/):
+                    case /\)/.test(workColString[i]):
                         break;
                 
                     default:
                         throw new ColorParseError(
-                            `Unexpected character : ${trimmedColorStr[i]} in ${trimmedColorStr}`);
-                        break;
+                            `Unexpected character : ${workColString[i]} in ${workColString}`);
+                       // break;
 
                 }
                 i++;
@@ -383,9 +435,9 @@ function setDefaultColor(newColor) {
     if (parseColorString(newColor)) {
         defaultColor = newColor;
     }
-    let colHexa = parseColorString("#5ADE");    //new ColorFactory("hexa", "5", "A", "D", "E");
+    /*let colHexa = parseColorString("#5ADE");    //new ColorFactory("hexa", "5", "A", "D", "E");
     console.log("colHexa");
-    console.log(colHexa.red);
+    console.log(colHexa.red);*/
 }
 function getDefaultColor() {
     return defaultColor;
@@ -393,22 +445,22 @@ function getDefaultColor() {
 /**
  * @returns a random rgb color
  */
-function chooseRandomColor(oldBackroundColor) {
+function chooseRandomColor(oldBackroundColor,coeff) {
     const red = getRandomInt(0, 256);
     const green = getRandomInt(0, 256);
     const blue = getRandomInt(0, 256);
     return `rgb(${red},${green},${blue})`;
 }
-function darkenColor(oldBackgroundColor) {
+function darkenColor(oldBackgroundColor,coeff) {
 
 }
-function whiteBlackColor(oldBackgroundColor) {
+function whiteBlackColor(oldBackgroundColor,coeff) {
     return chooseRandomColor(oldBackgroundColor);
 }
-function blackColor(oldBackgroundColor) {
+function blackColor(oldBackgroundColor,coeff) {
     return "rgb(0,0,0)";
 }
-function eraseColor(oldBackgroundColor) {
+function eraseColor(oldBackgroundColor,coeff) {
     return getDefaultColor();
 
 
