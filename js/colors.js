@@ -82,7 +82,7 @@ colorClasses["rgb"] = class ColorRGB extends Color {
         let colorArray = numValues.filter((element) => {
             return Color.isValidRGBColor(element);
         });
-        if (colorArray.length == 3) {
+        if (colorArray.length == 3 || colorArray.length==4)  {
             this.#red = colorArray[0];
             this.#green = colorArray[1];
             this.#blue = colorArray[2];
@@ -96,7 +96,7 @@ colorClasses["rgb"] = class ColorRGB extends Color {
                 }
             }
         } else {
-            const howMany = (colorArray.length < 3) ? "few" : "many";
+            const howMany = (colorArray.length < 3 || colorArray.length <4) ? "few" : "many";
             const message = `Too ${howMany} valid components for red, green and blue`;
             throw new ColorInvalidValueError(message);
         }
@@ -165,7 +165,7 @@ colorClasses["hexa"] = class ColorHexa extends Color {
             this.green,
             this.blue,
             this.alpha);
-        console.log(hexaMatches);
+        //console.log(hexaMatches);
     }
     get red() {
         return parseInt(this.#red, 16);
@@ -309,7 +309,7 @@ function parseColorString(colorString) {
             let top;
             stack.push(workColString[idxOpenParen]);
             while (i < workColString.length) {
-                console.log(workColString , i);
+                //console.log(workColString , i);
                 switch (true) {
                     case /\d/.test(workColString[i]):
                         if (stack.length >0){

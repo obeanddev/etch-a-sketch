@@ -2,8 +2,16 @@ import * as Colors from "./colors.js";
 import * as Squares from "./squares.js";
 let currentColorMode;
 let squareArray;
-const DEFAULT_COLOR = "#D9D9D932";
-/**
+/* function createSquare(container, sideLength) {
+    const squareEl = document.createElement("div");
+    squareEl.style.width = squareEl.style.height = sideLength;
+    squareEl.classList.add("square");
+    squareEl.setAttribute("data-num","9");
+    squareEl.setAttribute("data-denom","10");
+    container.appendChild(squareEl);
+    return squareEl;
+}
+ *//**
  * @param {*} element the element of which we want to obtain a property
  * @param {*} propertyName the propertName of a length property
  * @returns if it an array of two values then it is [unitLessLenght,lenghtUnit],
@@ -62,33 +70,67 @@ function getOffsetLeftTop(fromEl, toEl) {
     }
     return offsets;
 }
-let setColorMode = Colors.selectColorMode(Colors.MODE_WHITE_BLACK);
-currentColorMode = Colors.MODE_WHITE_BLACK;
-function createGridOfSquares(container, nSquaresBySide) {
+let setColorMode=Colors.selectColorMode(Colors.MODE_WHITE_BLACK);
+currentColorMode=Colors.MODE_WHITE_BLACK;
+function createGridOfSquares(container, nSquareBySide) {
     const squareSide = getSquareSide(container, nSquareBySide);
-    squareArray = new Squares.SquareArray(container, nSquaresBySide, squareSide, Colors.getDefaultColor());
-
+    let squareEl;
+  
+  /*   for (let i = 1; i <= nSquareBySide ** 2; i++) {
+        squareEl = createSquare(container, squareSide);
+  }  
+   */
+  squareArray = new Squares.SquareArray(container,nSquareBySide,squareSide); 
+   
 }
 
-function changeSquareColor(square, chooseColor) {
-    if (square !== null  && square.num >= 0)
-        square.color = chooseColor(square.color, square.coeff);
-       if (currentColorMode ===  Colors.MODE_DARKENING) {square.decreaseCoeff();}
+function changeSquareColor( /*squareEl*/ square,chooseColor,coeff) {
+    if (squareEl !== null /*&&
+        squareEl.tagName !== "BODY" &&
+        squareEl.tagName !== "HTML" */
+    ) {
+        
+        let oldColor= squareEl.style.backgroundColor ?
+             squareEl.style.backgroundColor:window.getComputedStyle(squareEl.parentElement).getPropertyValue("background-color");
+             if (currentColorMode === Colors.MODE_DARKENING ) {
+                if (parseInt(squareEl.dataset.denom) > 0) {
+                    coeff = parseInt( squareEl.dataset.num) / parseInt(squareEl.dataset.denom);
+                } else if (parseInt(squareEl.dataset.num)!=0 ){
+                    coeff=1;
+                } else {
+                    coeff=0;
+                }
+
+             } else {
+                coeff=0;
+             }
+        squareEl.style.backgroundColor = chooseColor(
+             oldColor,
+             coeff
+             );
+            if(currentColorMode === Colors.MODE_DARKENING) {
+                if ( parseInt(squareEl.dataset.num) > 0) {
+                    squareEl.dataset.num= parseInt(squareEl.dataset.num,10) -1;
+                    squareEl.dataset.denom= parseInt(squareEl.dataset.denom,10) -1;
+                }
+            }
+    }
 }
 const containerEl = document.querySelector("#container");
-Colors.setDefaultColor(DEFAULT_COLOR);
-
+Colors.setDefaultColor(window.getComputedStyle(containerEl).getPropertyValue("background-color"));
+//let previousVisitedSquareEl = null;
 let previousVisitedSquare = null;
-function clearGrid(container) {
+function clearGrid(container) {    
     container.replaceChildren();
-    previousVisitedSquare = null;
-    squareArray = null;
+    previousVisitedSquareEl = null;
 
 }
 containerEl.addEventListener("mouseleave", (e) => {
-    previousVisitedSquare = null;
+    previousVisitedSquareEl = null;
 });
-
+/* containerEl.addEventListener("click", (e) => {
+    console.log(e);
+}) */
 containerEl.addEventListener("mousemove", (e) => {
     /* we are going to work with the coordinates relative
      * to the parent div containerEl 
@@ -101,7 +143,7 @@ containerEl.addEventListener("mousemove", (e) => {
         let squareSideUnits = squareSideArray[1];
         let containerLengthUnitLess = containerLengthArray[0];
         let containerLengthUnits = containerLengthArray[1];
-        let coeff = 0.1;
+        let coeff=0.1;
         if (squareSideUnits === containerLengthUnits) {
             let nSquareBySide = Math.floor(containerLengthUnitLess / squareSideUnitLess);
             /* offsetX, offsetY are relative to the target element 
@@ -110,40 +152,44 @@ containerEl.addEventListener("mousemove", (e) => {
              * we want values relative to the container 
              */
             const offsets = getOffsetLeftTop(document.querySelector("body"), containerEl);
-
-
-
-            let visitedSquare = null;
-            let localSquares = null;
+           
+            let visitedSquareElOld;
+            //let visitedSquareEl;
+            let visitedSquare;
+            let  localSquares;
             let element = document.elementFromPoint(e.x, e.y);
             if (element !== null && element !== undefined && element.classList.contains("square")) {
-
-                localSquares = squareArray.getSquare(element);
+              //  visitedSquareEl = element;
+                 localSquares =   squareArray.getSquare(element);
             }
-            if (localSquares !== null) {
-                if (localSquares.length == 0) {
-                    return;
-                }
-                else {
-                    visitedSquare = localSquares[0];
-                }
+             if (localSquares.length ==0) { 
+                return ;
+            }
+             else {
+                 visitedSquare = localSquares[0];
+            }
+          /*   if (visitedSquareEl === null || visitedSquareEl === undefined) {
+                //   console.log("still null");
+                return;
+            } */
+           
 
-
-
-
-                if (previousVisitedSquare !== null) {
-                    let sameNode = previousVisitedSquare.element.isSameNode(visitedSquare.element)
-                    if (!sameNode) {
-                        changeSquareColor(visitedSquare, setColorMode);
-                        previousVisitedSquare = visitedSquare;
-                    }
+           // if (visitedSquareEl.classList.contains("square")) {
+                if (previousVisitedSquareEl === null) {
+                   // previousVisitedSquareEl = visitedSquareEl;
+                   previousVisitedSquare = visitedSquare;
+                    changeSquareColor(visitedSquareEl,setColorMode,coeff);
                 } else {
-            
-            previousVisitedSquare = visitedSquare;
-            changeSquareColor(visitedSquare, setColorMode);
+                    let sameNode = previousVisitedSquareEl.isSameNode(visitedSquareEl)
+                    if (!sameNode) {
+                        changeSquareColor(visitedSquareEl,setColorMode,coeff);
+                        previousVisitedSquareEl = visitedSquareEl;
+                        if (visitedSquareEl === visitedSquareElOld) {
+                            visitedSquareEl.innerText = squareNumber;
+                        }
+                    }
                 }
-            }
-
+           // } // end if it's a square
         } //end if units are the same
     }//end if the arrays returned by splitStyleLength are of length 2
 });
@@ -151,7 +197,7 @@ containerEl.addEventListener("mousemove", (e) => {
 let nSquareBySide = 50;
 createGridOfSquares(containerEl, nSquareBySide);
 /**************SHOW DIALOG***********************/
-let selectedSquareBySide = nSquareBySide;
+let selectedSquareBySide=nSquareBySide;
 let dialog = document.querySelector("dialog");
 let confirmBtn = document.querySelector("#confirmBtn")
 let showDialogBtn = document.querySelector("#showDialogBtn");
@@ -161,23 +207,23 @@ showDialogBtn.addEventListener("click", () => {
     dialog.showModal();
 });
 confirmBtn.addEventListener("click", (e) => {
-
-    console.log("confirmBtnValue in click: ", confirmBtn.value);
-
+   
+    console.log("confirmBtnValue in click: ",confirmBtn.value);
+   
     e.preventDefault(); // we don't want to submit this form
     dialog.close(confirmBtn.value);
 });
 
-nSquareInput.addEventListener("input", (e) => {
+nSquareInput.addEventListener("input", (e) => {    
     //TODO put warning when value above a threshold near 80
     let dialogMessage = dialog.querySelector("#dialogMessage");
     let typeEl = dialogMessage.querySelector("#type p");
     let messageEl = dialog.querySelector("#dialogMessage>p")
     if (e.target.checkValidity()) {
         confirmBtn.value = e.target.value;
-       // console.log(e.target);
+        console.log(e.target);
         if (dialogMessage.classList.contains("flex")) {
-            dialogMessage.classList.replace("flex", "hidden");
+            dialogMessage.classList.replace("flex","hidden");
         }
     } else {
         if (dialogMessage.classList.contains("hidden")) {
@@ -188,7 +234,7 @@ nSquareInput.addEventListener("input", (e) => {
             typeEl.innerText = "ERROR! ";
             let validityState = e.target.validity;
             if (validityState.badInput) {
-                messageEl.innerText = "The input must be a number with each character in the range 0 to 9";
+                messageEl.innerText="The input must be a number with each character in the range 0 to 9";
             } else {
                 if (validityState.rangeOverflow) {
                     messageEl.innerText = "The value must be at most 100. ";
@@ -202,24 +248,24 @@ nSquareInput.addEventListener("input", (e) => {
         }
     }
 });
-const ENTER_KEY = "Enter";
-nSquareInput.addEventListener("keydown", (e) => {
-    if (e.key === ENTER_KEY) {
-        e.stopPropagation();
-        e.preventDefault();
-        confirmBtn.click();
-    }
+const ENTER_KEY="Enter";
+nSquareInput.addEventListener("keydown",(e)=>{
+if (e.key === ENTER_KEY) {
+    e.stopPropagation();
+    e.preventDefault();
+    confirmBtn.click();
+}
 });
 dialog.addEventListener("close", (e) => {
-
+    let nSquare;
     console.log("in close :", dialog.returnValue);
     if (dialog.returnValue !== "default" && dialog.returnValue !== "cancel") {
         // have I to check validity?
-        selectedSquareBySide = nSquareBySide = Number(dialog.returnValue);
+        selectedSquareBySide =nSquare = Number(dialog.returnValue);
 
         setTimeout(() => {
             clearGrid(containerEl);
-            createGridOfSquares(containerEl, selectedSquareBySide);
+            createGridOfSquares(containerEl,selectedSquareBySide);
         }, 50);
     }
 

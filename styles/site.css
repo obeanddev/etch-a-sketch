@@ -56,7 +56,7 @@ body {
 
 .square {
     flex: none;
-  /*  outline: 1px solid blue;*/
+   /*  outline: 1px solid blue; */
 }
 #dialogMessage.flex {
     display: flex;
