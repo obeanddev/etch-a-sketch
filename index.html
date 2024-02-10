@@ -12,30 +12,45 @@
 <body>
 
     <dialog>
-        <form >
-            <label for="nSquare">Number of squares by side in the next grid (2 to 100) : 
-                <input id="nSquare" type="number"  min="2" max="100">
+        <form>
+            <label for="nSquare">Number of squares by side in the next grid (2 to 100) :
+                <input id="nSquare" type="number" min="2" max="100">
             </label>
-                <div id="dialogMessage" class="hidden">
-                    <div id="type"><p></p></div>
+            <div id="dialogMessage" class="hidden">
+                <div id="type">
                     <p></p>
-                    <button type="button" class="reset" >Reset to previous value</button>
-                    <button type="button" class="close" >&#128473;</div>
                 </div>
-                <button value="cancel" formmethod="dialog">Cancel</button>    
-                <button type="button" formmethod="dialog" id="confirmBtn" value="default">Confirm</button>
-            
+                <p></p>
+                <button type="button" class="reset">Reset to previous value</button>
+                <button type="button" class="close">&#128473;
+            </div>
+            </div>
+            <button value="cancel" formmethod="dialog">Cancel</button>
+            <button type="button" formmethod="dialog" id="confirmBtn" value="default">Confirm</button>
+
 
         </form>
 
     </dialog>
-    <div class="buttonBar">
-        <button id="showDialogBtn" type="button">Change number of squares</button>
-    </div>
-    <div class="outer">
-        <div class="inner">
+    <div class="whole">
+        <div class="left">
+            <div class="buttonBar">
+                <button id="showDialogBtn" type="button">Change number of squares</button>
+            </div>
+            <div class="outer">
+                <div class="inner">
 
-            <div id="container"></div>
+                    <div id="container"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modes">
+            <button type="button" id="black" value="black">Black</button>
+            <button type="button" id="random" value="random">Random Color</button>
+            <button type="button" id="black_white" value="black_white">Black and white</button>
+            <button type="button" id="erase" value="erase">Erase</button>
+
+
         </div>
     </div>
 </body>

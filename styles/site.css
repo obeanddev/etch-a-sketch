@@ -16,6 +16,12 @@ body {
     width: 100vw;
 
 }
+.whole {
+    display: flex;
+    flex-direction: row;
+    font-size: 2rem;
+    gap:20px;
+}
 
 .outer {
     padding: 40px;
@@ -24,6 +30,13 @@ body {
     width: calc(var(--container-side-length) + 2 * 40px + 2 * 25px);
     height: calc(var(--container-side-length) + 2 * 40px + 2 * 25px);
 }
+.modes {
+    display: flex;
+    flex-direction: column;
+    gap:20px;
+    justify-content: center;
+
+}
 .buttonBar {
     display: flex;
     width: calc(var(--container-side-length) + 2 * 40px + 2 * 25px);
@@ -31,9 +44,9 @@ body {
     justify-content: center;
     align-items: center;
     border: 2px solid green;
-    font-size:2rem;
+   /* font-size:2rem;*/
 }
-.buttonBar button{
+ button{
     font-size: inherit;
 
 }

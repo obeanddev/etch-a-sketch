@@ -416,10 +416,10 @@ function darkenColor(oldBackgroundColor,coeff=0.90) {
 }
 function whiteBlackColor(oldBackgroundColor,coeff=0) {
 
-    return oldBackroundColor==="0000FF"?"FFFFFF":"0000FF";
+    return oldBackgroundColor==="#000000FF"?"#FFFFFFFF":"#000000FF";
 }
 function blackColor(oldBackgroundColor,coeff=0) {
-    return "#0000FF";
+    return "#000000FF";
 }
 function eraseColor(oldBackgroundColor,coeff=0) {
     return getDefaultColor();
@@ -428,7 +428,7 @@ function eraseColor(oldBackgroundColor,coeff=0) {
 }
 const MODE_RANDOM_COLOR = 1;
 const MODE_DARKENING = 2;
-const MODE_WHITE_BLACK = 3;
+const MODE_BLACK_WHITE = 3;
 const MODE_BLACK = 4;
 const MODE_ERASE = 5;
 
@@ -437,13 +437,14 @@ function selectColorMode(mode) {
         case MODE_RANDOM_COLOR: return chooseRandomColor;
         case MODE_DARKENING: return darkenColor;
         case MODE_BLACK: return blackColor;
-        case MODE_WHITE_BLACK: return whiteBlackColor;
+        case MODE_BLACK_WHITE: return whiteBlackColor;
+        case MODE_ERASE: return eraseColor;
     }
 }
 export {
     MODE_RANDOM_COLOR,
     MODE_DARKENING,
-    MODE_WHITE_BLACK,
+    MODE_BLACK_WHITE,
     MODE_BLACK,
     MODE_ERASE,
     getDefaultColor, setDefaultColor,

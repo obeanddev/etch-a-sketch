@@ -62,8 +62,8 @@ function getOffsetLeftTop(fromEl, toEl) {
     }
     return offsets;
 }
-let setColorMode = Colors.selectColorMode(Colors.MODE_DARKENING);
-currentColorMode = Colors.MODE_DARKENING;
+let setColorMode = Colors.selectColorMode(Colors.MODE_BLACK);
+currentColorMode = Colors.MODE_BLACK;
 function createGridOfSquares(container, nSquaresBySide) {
     const squareSide = getSquareSide(container, nSquareBySide);
     squareArray = new Squares.SquareArray(container, nSquaresBySide, squareSide, Colors.getDefaultColor());
@@ -154,7 +154,42 @@ containerEl.addEventListener("mousemove", (e) => {
 
 let nSquareBySide = 10;
 createGridOfSquares(containerEl, nSquareBySide);
-/**************SHOW DIALOG***********************/
+/************** MODE SWITCHES *********************/
+
+const btns_mode=document.querySelectorAll(".modes > button");
+for(let button of btns_mode) 
+{
+    button.addEventListener("click",(evt)=> {
+        let newMode=null;
+        switch(evt.target.id) {
+            case "black":                 
+                newMode= Colors.MODE_BLACK;
+                break;
+            case "random":
+                newMode=Colors.MODE_RANDOM_COLOR;
+                break;
+            case "black_white":
+                newMode=Colors.MODE_BLACK_WHITE;
+                break;
+            case "erase":
+                newMode=Colors.MODE_ERASE;
+                 break;
+            default: break;
+        }
+        if (newMode !== null) {
+            setColorMode = Colors.selectColorMode(newMode);
+            currentColorMode = newMode;
+        }
+
+    }
+    );
+
+}
+
+
+
+
+/************** SHOW DIALOG ***********************/
 let selectedSquareBySide = nSquareBySide;
 let dialog = document.querySelector("dialog");
 let confirmBtn = document.querySelector("#confirmBtn")
