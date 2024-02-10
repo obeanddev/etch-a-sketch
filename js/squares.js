@@ -2,20 +2,23 @@ class Square {
     #element;
     #sideLength;
     #color;
-    #num;
-    #denom;
+    #multiplierNum;
+    #multiplierDenom;
+    #coeff;
+    #grayScale;
+    #brightness;
     constructor(container,sideLength,color) {
         this.#element = document.createElement("div");
         this.#element.style.width = this.element.style.height = sideLength;
-        
-    this.#element.classList.add("square");
-    // this.#element.setAttribute("data-num","9");
-    // this.#element.setAttribute("data-denom","10");
-    container.appendChild(this.#element);
-    this.#sideLength = sideLength;
-    this.color = color;
-    this.#num=9;
-    this.#denom=10;
+        this.#element.style.filter="brightness(1) grayscale(0)";
+        this.#element.classList.add("square");
+        container.appendChild(this.#element);
+        this.#sideLength = sideLength;
+        this.color = color;
+        this.#multiplierNum=90; this.#multiplierDenom=100;
+        this.#coeff=40/100;
+        this.#grayScale=0;
+        this.#brightness=1;
     }
     get element() {
         return this.#element;
@@ -30,22 +33,32 @@ class Square {
         this.#color= newColor;
         this.#element.style.backgroundColor= newColor;
     }
-    get num() {
-        return this.#num;
-    }
+    
     get coeff() {
-        if (this.#denom> 0) {
-            return this.#num / this.#denom;
-
-        } else if (num > 0) {
-            return this.#num;
-
-        } else throw new RangeError("Can't calculate coefficient, both num and denom have invalid values");
+      return this.#coeff;
          
     }
-    decreaseCoeff() {
-        this.#num--;
-        this.#denom--;
+    increaseCoeff() {
+        
+        this.#coeff*=this.#multiplierNum/this.#multiplierDenom;
+        if (this.#grayScale <0.7){
+            this.#grayScale+=0.0250;
+        } else {
+            this.#grayScale=1;
+        }
+        if (this.#brightness >0.05) {
+            this.#brightness-=0.05;
+            
+        } else {
+            this.#brightness=0;
+        }
+        this.#element.style.filter=`brightness(${this.#brightness}) grayscale(${this.#grayScale})`;
+        this.#multiplierNum-=0.1;
+      //  this.#multiplierDenom-=0.3;
+
+       
+
+        
     }
 
 }

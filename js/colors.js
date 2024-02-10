@@ -123,8 +123,142 @@ colorClasses["rgb"] = class ColorRGB extends Color {
     get green() { return this.#green; }
     get blue() { return this.#blue; }
     get alpha() { return this.#alpha; }
+    get toHexa() {
+        return '#' + Math.round(this.#red).toString(16).padStart(2,"0") + 
+                Math.round(this.#green).toString(16).padStart(2,"0") +
+                Math.round(this.#blue).toString(16).padStart(2,"0") +
+                Math.round(this.#alpha * 255).toString(16).padStart(2,"0");
+    }
 
 };
+colorClasses["hsl"] = class ColorHSL extends Color {
+    #hue;
+    #saturation
+    #lightness;
+    #alpha;
+    
+    static isValidHue(hueInDeg) {
+        return !Number.isNaN(hueInDeg) && hueInDeg >= 0 && hueInDeg <= 360;
+    }
+    static isValidSaturation(sat) {
+        return !Number.isNaN(sat) && sat >= 0 && sat <= 100;
+    }
+    static isValidLightness(lightness) {
+        return !Number.isNaN(lightness) && lightness >= 0 && lightness <= 100;
+    }
+    constructor(...values) {
+        super(...values);
+        const numValues = values.map((element) => Number(element));
+        if (numValues.length === 3 || numValues.length === 4) {
+            if (ColorHSL.isValidHue(numValues[0])) {
+                this.#hue = numValues[0];
+            } else {
+                throw new ColorInvalidValueError("Hue must be between 0 and 360 degree");
+            }
+            if (ColorHSL.isValidSaturation(numValues[1])) {
+                this.#saturation = numValues[1];
+            } else {
+                throw new ColorInvalidValueError("Saturation must be a percentage between 0 and 100%");
+            }
+            if (ColorHSL.isValidLightness(numValues[2])) {
+                this.#lightness = numValues[2];
+            } else {
+                throw new ColorInvalidValueError("Lighness must be a  percentage between 0 and 100%");
+            }
+            this.#alpha = 1;
+            if (numValues.length === 4) {
+
+                if (Color.isValidAlpha(numValues[3])) {
+                    this.#alpha = numValues[3];
+                } else {
+                    throw new ColorInvalidValueError("alpha must be a real in the interval [0-1]");
+
+                }
+            }
+        } else {
+            const howMany = numValues.length < 3 ? "few" : "many";
+            const message = `Too ${howMany} componenents for hue, saturation, lighness and optionnaly alpha`;
+            throw new ColorInvalidValueError(message);
+        }
+    }
+    get hue() {
+        return this.#hue;
+    }
+    get saturation() {
+        return this.#saturation;
+    }
+    get lightness() {
+        return this.#lightness;
+    }
+    get alpha() {
+        return this.#alpha;
+    }
+    hslValue() {
+        if (this.#alpha) {
+            return `hsl(${this.#hue}deg, ${this.#saturation}%, ${this.#lightness}%,${this.#alpha})`;
+
+        } else {
+            return `hsl(${this.#hue}deg, ${this.#saturation}%, ${this.#lightness}%)`;
+
+        }
+
+    }
+    darken(coeff) {
+        let result = Math.abs(this.#lightness * (  coeff) ); 
+        result = result > 0 ? result : 0;
+        this.#lightness = result;
+    }
+    lighten(coeff) {
+        let result = this.#lightness * ( 1 +coeff);
+        result = result <= 100 ? result : 100;
+        this.#lightness = result;
+    }
+    toRGB() {
+        //R, G, B, S, et L sont exprimées dans l'intervalle [0, 1].
+        // hue H est exprimée dans l'intervalle [0, 360°].
+        let hue= this.hue % 360;
+        if (hue <0) { hue+=360;}
+        let lightness = this.lightness /100;
+        let saturation = this.saturation /100;
+        //see https://drafts.csswg.org/css-color/#hsl-to-rgb
+        function f(n) {
+            let k= (n+ hue/30) %12;
+            let a= saturation * Math.min(lightness, 1 - lightness);
+            return lightness -a *(Math.max(-1, Math.min(k - 3 , 9 - k, 1)));
+
+        }
+        return new colorClasses["rgb"](f(0) *255,f(8) *255 ,f(4) *255);
+
+
+
+        /*let c = (1 -Math.abs(2 * lightness -1)) * saturation; 
+        let hPrime = hue / 60;
+        let x =  c * ( 1 - Math.abs( (hPrime % 2) - 1));
+        let m= lightness - 0.5 * c;
+        let rgbPrimes = [0,0,0];
+        if (hPrime >= 0 && hPrime < 1) {
+            rgbPrimes=[c,x,0];
+        } else if ( hPrime < 2) {
+            rgbPrimes=[x,c, 0];
+        } else if (hPrime < 3) {
+            rgbPrimes=[0,c,x];
+        } else if (hPrime < 4) {
+            rgbPrimes=[0,x,c];            
+        } else if (hPrime < 5) {
+            rgbPrimes=[x,0,c];
+        } else {
+            rgbPrimes=[c,0,x];
+            
+        }
+        
+        return new colorClasses["rgb"](Math.round(Math.abs((rgbPrimes[0]) *255 +m)) ,Math.round(Math.abs( (rgbPrimes[1] +m ) *255 )) , Math.round(Math.abs( (rgbPrimes[2] +m ) *255 ))    ,this.alpha );
+        */
+
+
+
+
+    }
+}
 colorClasses["hexa"] = class ColorHexa extends Color {
     #red;
     #green;
@@ -181,102 +315,62 @@ colorClasses["hexa"] = class ColorHexa extends Color {
     }
     rgbValue() { return this.#colorRGB.rgbValue(); }
     rgbValuePercents() { return this.#colorRGB.rgbValuePercents(); }
-    /*darken(coeff) {
-
-    }
-    lighten(coeff) {
-
-    }*/
+    
 };
-colorClasses["hsl"] = class ColorHSL extends Color {
-    #hue;
-    #saturation
-    #lightness;
-    #alpha;
-    static isValidHue(hueInDeg) {
-        return !Number.isNaN(hueInDeg) && hueInDeg >= 0 && hueInDeg <= 360;
-    }
-    static isValidSaturation(sat) {
-        return !Number.isNaN(sat) && sat >= 0 && sat <= 100;
-    }
-    static isValidLightness(lightness) {
-        return !Number.isNaN(lightness) && lightness >= 0 && lightness <= 100;
-    }
-    constructor(...values) {
-        super(...values);
-        const numValues = values.map((element) => Number(element));
-        if (numValues.length === 3 || numValues.length === 4) {
-            if (ColorHSL.isValidHue(numValues[0])) {
-                this.#hue = numValues[0];
-            } else {
-                throw new ColorInvalidValueError("Hue cannot must be between 0 and 360 degree");
-            }
-            if (ColorHSL.isValidSaturation(numValues[1])) {
-                this.#saturation = numValues[1];
-            } else {
-                throw new ColorInvalidValueError("Saturation must be a percentage between 0 and 100%");
-            }
-            if (ColorHSL.isValidLightness(numValues[2])) {
-                this.#lightness = numValues[2];
-            } else {
-                throw new ColorInvalidValueError("Lighness must be a  percentage between 0 and 100%");
-            }
-            this.#alpha = 1;
-            if (numValues.length === 4) {
 
-                if (Color.isValidAlpha(numValues[3])) {
-                    this.#alpha = numValues[3];
-                } else {
-                    throw new ColorInvalidValueError("alpha must be a real in the interval [0-1]");
-
-                }
-            }
-        } else {
-            const howMany = numValues.length < 3 ? "few" : "many";
-            const message = `Too ${howMany} componenents for hue, saturation, lighness and optionnaly alpha`;
-            throw new ColorInvalidValueError(message);
-        }
-    }
-    get hue() {
-        return this.#hue;
-    }
-    get saturation() {
-        return this.#saturation;
-    }
-    get lightness() {
-        return this.#lightness;
-    }
-    get alpha() {
-        return this.#alpha;
-    }
-    hslValue() {
-        if (this.#alpha) {
-            return `hsl(${this.#hue}deg, ${this.#saturation}%, ${this.#lightness}%,${this.#alpha})`;
-
-        } else {
-            return `hsl(${this.#hue}deg, ${this.#saturation}%, ${this.#lightness}%)`;
-
-        }
-
-    }
-    darken(coeff) {
-        let result = this.#lightness * ( 1 - coeff) ; 
-        result = result >= 0 ? result : 0;
-        this.#lightness = result;
-    }
-    lighten(coeff) {
-        let result = this.#lightness * ( 1 +coeff);
-        result = result <= 100 ? result : 100;
-        this.#lightness = result;
-    }
-}
 class ColorFactory {
     constructor(namespace, ...values) {
         return new colorClasses[namespace](...values);
     }
 }
 
-let defaultColor = "rgb(217, 217, 217)";
+/**
+ * 
+ * @param {*} red red component expressed as an number between  0 and 255 included
+ * @param {*} green green component expressed as an number between  0 and 255 included
+ * @param {*} blue blue component expressed as an number between  0 and 255 included
+ * @param {*} alpha component expressed as a number in the interval [0,1]
+ * @returns a Color expressed as an hsl form
+ */
+function hslFromRgb(red,green,blue,alpha=1){
+    //see https://drafts.csswg.org/css-color/#rgb-to-hsl
+    red = Color.getPercents(red,255)/100;
+    green= Color.getPercents(green,255)/100;
+    blue = Color.getPercents(blue,255)/100;    
+    let max=Math.max(red,green,blue);
+    let min = Math.min(red,green,blue);
+    let chroma= max - min;
+    let huePrime;
+    let hue;
+    let saturation;
+    let lightness = 0.5 *  (max + min);
+    if (chroma!==0) {
+        if (max==red) {
+            huePrime = ( (green - blue) / chroma ) + (green < blue)?6:0;
+        } else if (max==green) {
+            huePrime = ( (blue -red)/chroma + 2 )  ;
+        } else { //max is blue
+            huePrime = ((red - green)/ chroma + 4)  ;
+
+        }
+        
+        hue = 60 * Math.abs(huePrime);
+        
+        saturation = (lightness ==0 || lightness == 1 )
+            ?  0 
+            :  (max - lightness) / Math.min(lightness, 1 - lightness);
+        //chroma /(1 - Math.abs(2 * lightness - 1));
+        
+    } else {
+        hue= 0;
+        saturation = 0;
+
+    }
+    return new ColorFactory("hsl",hue,Math.round(Math.abs(saturation) * 100),lightness * 100,alpha);
+
+
+}
+let defaultColor = "#FFFFFF";
 //TODO improve parsing algorithm
 // String.match returns an array!!!!!!!
 // One has to use methods of RegExp to get the results he want
@@ -285,150 +379,8 @@ function parseColorString(colorString) {
     if (colorString.startsWith("#")) {
         result = new ColorFactory("hexa", colorString);
     } else {
-        const workColString = colorString.trim();
-        const idxOpenParen = workColString.indexOf("(");
-        const idxCloseParen = workColString.lastIndexOf(")");
-        if (idxOpenParen == -1) {
-            if (idxCloseParen == -1) {
-                // workColString is probably a colorName
-            }  else {
-                throw ColorParseError(`The sring has unmatched parentheses: ${workColString}`);
-            }
-        } else {
-            if (idxOpenParen !== -1 && idxCloseParen !== workColString.length - 1) {
-                throw new ColorParseError("Once trimmed, the last closing parenthesis must be at the end of the String");
-            }
-            const funcName = workColString.substring(0, idxOpenParen);
-            const EXPECTED_NAMES = ["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch", "color"];
-            if (!EXPECTED_NAMES.includes(funcName)) {
-                throw new ColorParseError(`The function ${funcName} is not a known function color`);
-
-            }
-            let stack = [];
-            let i = idxOpenParen + 1;
-            let top;
-            stack.push(workColString[idxOpenParen]);
-            while (i < workColString.length) {
-                //console.log(workColString , i);
-                switch (true) {
-                    case /\d/.test(workColString[i]):
-                        if (stack.length >0){
-                            top=stack[length -1];
-                            switch (true) {
-                                case /\d+\.?\d*/.test(top):
-                                    stack[length-1]= top + "" + workColString[i];
-                                    break;
-                                case /\s/.test(top):
-                                    stack.push(workColString[i]);
-                                    break;    
-                                case /[A-Za-z]+-?/.test(top):
-                                    stack[length-1]= top + "" + workColString[i];
-                                    break;
-                                case /-/.test(top):
-                                    stack[length-1]= top + "" + workColString[i];
-                                    break;
-                                case /\(/.test(top):
-                                    stack.push(workColString[i]);
-                                    break;                                 
-                                default:
-                                    throw new ColorParseError(`unexpected Token ${workColString[i]}after ${top}` );
-                                    //break;
-
-                                
-                            }
-                        } else { // stack.length=0
-                            stack.push(workColString[i]);
-
-
-                        }
-                        break;
-
-                    case /\./.test(workColString[i]):
-                        if (stack.length>0) {
-                            top=stack[stack.length - 1];
-                            switch (true) {
-                                case /\d+/.test(top):
-                                    stack[length-1] = top +"" + workColString[i];
-                                    break;
-                                case /\(|\s+/.test(top):                                
-                                    stack.push(workColString[i]);
-                                    break;
-                                default:
-                                    throw new ColorParseError(`unexpected token ${workColString[i]} after ${top}`);
-                                
-                            }
-                        }
-                        break;
-                    case /-/.test(workColString[i]):
-                        if (stack.length >0) {
-                            top = stack[stack.length -1];
-                            switch(true) {
-                                case /[a-zA-Z]+/.test(top):
-                                    stack[stack.length -1]+="" + workColString[i];
-                                break;
-                                case /\s+/.test(top):
-                                    stack.push(workColString[i]);
-                                default:
-                                    throw new ColorParseError(`unexpected token ${workColString[i]} after ${top}`);
-                                    //break;
-                            }
-
-                        } 
-                    break;
-                    case /%/.test(workColString[i]):
-                        if (stack.length >0) {
-                            top= stack[stack.length -1];
-                            if (/\d+(.\d*)?/.test(stack[length -1])) {
-                                stack.push(workColString[i]);
-                            } else {
-                                throw new ColorParseError(`unexpected token ${workColString[i]} after ${top}`);
-                            }
-                        }
-                        break;
-                    case /,/.test(workColString[i]):
-                        break;
-                    case /\s/.test(workColString[i]):
-                        break;
-                    case /\//.test(workColString[i]):
-                        break;
-                    case /\+|\*/.test(workColString[i]):
-                        break;
-                    case /[A-Za-z]+/.test(workColString[i]):
-                        break;
-                    case /\(/.test(workColString[i]):
-                        break;
-                    case /\)/.test(workColString[i]):
-                        break;
-                
-                    default:
-                        throw new ColorParseError(
-                            `Unexpected character : ${workColString[i]} in ${workColString}`);
-                       // break;
-
-                }
-                i++;
-            }
-        }
-
-    }/*if (colorString.startsWith("rgb")) {
-        let arrayRGB = colorString.split(/\(|,|\)/);
-        console.log(arrayRGB);
-        if (arrayRGB[1] === "") {
-            arrayRGB.splice(1,1);
-        }
-        if (arrayRGB[arrayRGB.length - 1] === "") {
-            arrayRGB.pop();
-        }
-        if (arrayRGB.length === 4 || arrayRGB.length === 5) {
-            result = new ColorFactory("rgb",
-                arrayRGB[1].trim(),
-                arrayRGB[2].trim(),
-                arrayRGB[3].trim(),
-                arrayRGB.length === 5 ? arrayRGB[4].trim() : 1);
-            
-            console.log(result);
-        }*/
-
+        throw new ColorNotImplementedError("At this time the function only works for hexadecimal color strings");
+    }
     return result;
 }
 function setDefaultColor(newColor) {
@@ -446,12 +398,18 @@ function getDefaultColor() {
  * @returns a random rgb color
  */
 function chooseRandomColor(oldBackroundColor,coeff) {
-    const red = getRandomInt(0, 256);
-    const green = getRandomInt(0, 256);
-    const blue = getRandomInt(0, 256);
-    return `rgb(${red},${green},${blue})`;
+    const red = getRandomInt(0, 256).toString(16).padStart(2,"0");
+    const green = getRandomInt(0, 256).toString(16).padStart(2,"0");
+    const blue = getRandomInt(0, 256).toString(16).padStart(2,"0");
+    const alpha= getRandomInt(0, 256).toString(16).padStart(2,"0");
+    return `#${red}${green}${blue}${alpha}`;
 }
 function darkenColor(oldBackgroundColor,coeff) {
+    let hexColor = parseColorString(oldBackgroundColor);
+    let alpha= hexColor.alpha === undefined?1:hexColor.alpha;
+    let hslColor = hslFromRgb(hexColor.red,hexColor.green, hexColor.blue,alpha);
+    hslColor.darken(coeff);
+    return hslColor.toRGB().toHexa;
 
 }
 function whiteBlackColor(oldBackgroundColor,coeff) {

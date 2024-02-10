@@ -2,7 +2,7 @@ import * as Colors from "./colors.js";
 import * as Squares from "./squares.js";
 let currentColorMode;
 let squareArray;
-const DEFAULT_COLOR = "#D9D9D932";
+const DEFAULT_COLOR ="#D9D9D932"; // "#FFFFFF";
 /**
  * @param {*} element the element of which we want to obtain a property
  * @param {*} propertyName the propertName of a length property
@@ -62,8 +62,8 @@ function getOffsetLeftTop(fromEl, toEl) {
     }
     return offsets;
 }
-let setColorMode = Colors.selectColorMode(Colors.MODE_WHITE_BLACK);
-currentColorMode = Colors.MODE_WHITE_BLACK;
+let setColorMode = Colors.selectColorMode(Colors.MODE_DARKENING);
+currentColorMode = Colors.MODE_DARKENING;
 function createGridOfSquares(container, nSquaresBySide) {
     const squareSide = getSquareSide(container, nSquareBySide);
     squareArray = new Squares.SquareArray(container, nSquaresBySide, squareSide, Colors.getDefaultColor());
@@ -71,9 +71,9 @@ function createGridOfSquares(container, nSquaresBySide) {
 }
 
 function changeSquareColor(square, chooseColor) {
-    if (square !== null  && square.num >= 0)
+    if (square !== null )
         square.color = chooseColor(square.color, square.coeff);
-       if (currentColorMode ===  Colors.MODE_DARKENING) {square.decreaseCoeff();}
+       if (currentColorMode ===  Colors.MODE_DARKENING) {square.increaseCoeff();}
 }
 const containerEl = document.querySelector("#container");
 Colors.setDefaultColor(DEFAULT_COLOR);
@@ -148,7 +148,7 @@ containerEl.addEventListener("mousemove", (e) => {
     }//end if the arrays returned by splitStyleLength are of length 2
 });
 
-let nSquareBySide = 50;
+let nSquareBySide = 10;
 createGridOfSquares(containerEl, nSquareBySide);
 /**************SHOW DIALOG***********************/
 let selectedSquareBySide = nSquareBySide;
