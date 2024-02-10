@@ -218,6 +218,7 @@ colorClasses["hsl"] = class ColorHSL extends Color {
         // hue H est exprimée dans l'intervalle [0, 360°].
         let hue= this.hue % 360;
         if (hue <0) { hue+=360;}
+  /*       if (hue>60) {hue-=60;this.#hue-=60;}  */
         let lightness = this.lightness /100;
         let saturation = this.saturation /100;
         //see https://drafts.csswg.org/css-color/#hsl-to-rgb
@@ -404,21 +405,23 @@ function chooseRandomColor(oldBackroundColor,coeff) {
     const alpha= getRandomInt(0, 256).toString(16).padStart(2,"0");
     return `#${red}${green}${blue}${alpha}`;
 }
-function darkenColor(oldBackgroundColor,coeff) {
+function darkenColor(oldBackgroundColor,coeff=0.90) {
     let hexColor = parseColorString(oldBackgroundColor);
-    let alpha= hexColor.alpha === undefined?1:hexColor.alpha;
+    let alpha= hexColor.alpha === undefined?1:hexColor.alpha*1.05;
+    
     let hslColor = hslFromRgb(hexColor.red,hexColor.green, hexColor.blue,alpha);
     hslColor.darken(coeff);
     return hslColor.toRGB().toHexa;
 
 }
-function whiteBlackColor(oldBackgroundColor,coeff) {
-    return chooseRandomColor(oldBackgroundColor);
+function whiteBlackColor(oldBackgroundColor,coeff=0) {
+
+    return oldBackroundColor==="0000FF"?"FFFFFF":"0000FF";
 }
-function blackColor(oldBackgroundColor,coeff) {
-    return "rgb(0,0,0)";
+function blackColor(oldBackgroundColor,coeff=0) {
+    return "#0000FF";
 }
-function eraseColor(oldBackgroundColor,coeff) {
+function eraseColor(oldBackgroundColor,coeff=0) {
     return getDefaultColor();
 
 

@@ -72,8 +72,12 @@ function createGridOfSquares(container, nSquaresBySide) {
 
 function changeSquareColor(square, chooseColor) {
     if (square !== null )
-        square.color = chooseColor(square.color, square.coeff);
-       if (currentColorMode ===  Colors.MODE_DARKENING) {square.increaseCoeff();}
+       // square.color = chooseColor(square.color, square.coeff);
+       if (currentColorMode ===  Colors.MODE_DARKENING) {
+            square.darken();
+        } else {
+            square.color = chooseColor(square.color);
+        }
 }
 const containerEl = document.querySelector("#container");
 Colors.setDefaultColor(DEFAULT_COLOR);
