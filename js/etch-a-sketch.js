@@ -3,6 +3,7 @@ import * as Squares from "./squares.js";
 let currentColorMode;
 let squareArray;
 const DEFAULT_COLOR ="#D9D9D932"; // "#FFFFFF";
+
 /**
  * @param {*} element the element of which we want to obtain a property
  * @param {*} propertyName the propertName of a length property
@@ -30,6 +31,7 @@ function splitStyleLength(element, propertyName) {
         return styleLengthArray;
     }
 }
+
 /**
  * @param {*} container the element in which we want to create a square grid
  * @param {*} nSquareBySide the number of square by side, must be an integer
@@ -46,6 +48,7 @@ function getSquareSide(container, nSquareBySide) {
     }
     return squareSide;
 }
+
 function getOffsetLeftTop(fromEl, toEl) {
     let el = toEl;
     let offsets = { offsetLeft: el.offsetLeft, offsetTop: el.offsetTop };
@@ -67,7 +70,6 @@ currentColorMode = Colors.MODE_BLACK;
 function createGridOfSquares(container, nSquaresBySide) {
     const squareSide = getSquareSide(container, nSquareBySide);
     squareArray = new Squares.SquareArray(container, nSquaresBySide, squareSide, Colors.getDefaultColor());
-
 }
 
 function changeSquareColor(square, chooseColor) {
@@ -80,9 +82,11 @@ function changeSquareColor(square, chooseColor) {
         }
 }
 const containerEl = document.querySelector("#container");
+const currentModeEl=document.querySelector("#currentmode");
 Colors.setDefaultColor(DEFAULT_COLOR);
 
 let previousVisitedSquare = null;
+
 function clearGrid(container) {
     container.replaceChildren();
     previousVisitedSquare = null;
@@ -104,8 +108,7 @@ containerEl.addEventListener("mousemove", (e) => {
         let squareSideUnitLess = squareSideArray[0];
         let squareSideUnits = squareSideArray[1];
         let containerLengthUnitLess = containerLengthArray[0];
-        let containerLengthUnits = containerLengthArray[1];
-        let coeff = 0.1;
+        let containerLengthUnits = containerLengthArray[1];        
         if (squareSideUnits === containerLengthUnits) {
             let nSquareBySide = Math.floor(containerLengthUnitLess / squareSideUnitLess);
             /* offsetX, offsetY are relative to the target element 
@@ -113,17 +116,14 @@ containerEl.addEventListener("mousemove", (e) => {
              * and that 's not what we want
              * we want values relative to the container 
              */
-            const offsets = getOffsetLeftTop(document.querySelector("body"), containerEl);
-
-
-
+           // const offsets = getOffsetLeftTop(document.querySelector("body"), containerEl);
             let visitedSquare = null;
             let localSquares = null;
             let element = document.elementFromPoint(e.x, e.y);
             if (element !== null && element !== undefined && element.classList.contains("square")) {
-
                 localSquares = squareArray.getSquare(element);
             }
+
             if (localSquares !== null) {
                 if (localSquares.length == 0) {
                     return;
@@ -132,25 +132,28 @@ containerEl.addEventListener("mousemove", (e) => {
                     visitedSquare = localSquares[0];
                 }
 
-
-
-
                 if (previousVisitedSquare !== null) {
                     let sameNode = previousVisitedSquare.element.isSameNode(visitedSquare.element)
                     if (!sameNode) {
                         changeSquareColor(visitedSquare, setColorMode);
                         previousVisitedSquare = visitedSquare;
                     }
-                } else {
-            
-            previousVisitedSquare = visitedSquare;
-            changeSquareColor(visitedSquare, setColorMode);
+                } else {            
+                    previousVisitedSquare = visitedSquare;
+                    changeSquareColor(visitedSquare, setColorMode);
                 }
-            }
+            } //end if localsqaures is not null
 
         } //end if units are the same
     }//end if the arrays returned by splitStyleLength are of length 2
 });
+
+function clearTimeOut(delayms) {
+    setTimeout(() => {
+        clearGrid(containerEl);
+        createGridOfSquares(containerEl, selectedSquareBySide);
+    }, 50);
+}
 
 let nSquareBySide = 10;
 createGridOfSquares(containerEl, nSquareBySide);
@@ -164,31 +167,37 @@ for(let button of btns_mode)
         switch(evt.target.id) {
             case "black":                 
                 newMode= Colors.MODE_BLACK;
-                break;
-            case "random":
-                newMode=Colors.MODE_RANDOM_COLOR;
-                break;
+                break;            
             case "black_white":
                 newMode=Colors.MODE_BLACK_WHITE;
                 break;
-            case "erase":
+            case "darkening":
+                newMode=Colors.MODE_DARKENING;
+                break;
+            case "eraser":
                 newMode=Colors.MODE_ERASE;
-                 break;
-            default: break;
+                break;
+            case "random":
+                newMode=Colors.MODE_RANDOM_COLOR;
+                break;           
+            default: 
+                break;
         }
         if (newMode !== null) {
             setColorMode = Colors.selectColorMode(newMode);
             currentColorMode = newMode;
-        }
+            currentModeEl.innerText = evt.target.value.substring(0,1).toUpperCase() + evt.target.value.substring(1,evt.target.value.length); 
+         }
 
     }
     );
 
 }
+/************** CLEAR ALL BUTTON *******************/
+document.getElementById("clearall").addEventListener("click",()=>{
+    clearTimeOut(50);
 
-
-
-
+});
 /************** SHOW DIALOG ***********************/
 let selectedSquareBySide = nSquareBySide;
 let dialog = document.querySelector("dialog");
@@ -201,7 +210,7 @@ showDialogBtn.addEventListener("click", () => {
 });
 confirmBtn.addEventListener("click", (e) => {
 
-    console.log("confirmBtnValue in click: ", confirmBtn.value);
+   // console.log("confirmBtnValue in click: ", confirmBtn.value);
 
     e.preventDefault(); // we don't want to submit this form
     dialog.close(confirmBtn.value);
@@ -251,15 +260,11 @@ nSquareInput.addEventListener("keydown", (e) => {
 });
 dialog.addEventListener("close", (e) => {
 
-    console.log("in close :", dialog.returnValue);
+    // console.log("in close :", dialog.returnValue);
     if (dialog.returnValue !== "default" && dialog.returnValue !== "cancel") {
         // have I to check validity?
         selectedSquareBySide = nSquareBySide = Number(dialog.returnValue);
-
-        setTimeout(() => {
-            clearGrid(containerEl);
-            createGridOfSquares(containerEl, selectedSquareBySide);
-        }, 50);
+        clearTimeOut(50);
     }
 
 });

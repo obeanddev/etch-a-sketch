@@ -3,7 +3,7 @@ html {
     font-size:1rem;
 }
 :root {
-    --container-side-length: 540px;
+    --container-side-length: 640px;
 }
 * {
     box-sizing: inherit;
@@ -35,7 +35,12 @@ body {
     flex-direction: column;
     gap:20px;
     justify-content: center;
+    width:calc( 2rem * 30);
+    
 
+}
+.modes > button {
+    width:50%;
 }
 .buttonBar {
     display: flex;
@@ -45,6 +50,9 @@ body {
     align-items: center;
     border: 2px solid green;
    /* font-size:2rem;*/
+}
+.buttonBar button {
+    width: calc( 2rem * 15);
 }
  button{
     font-size: inherit;
